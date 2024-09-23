@@ -1,0 +1,71 @@
+import numpy as np
+
+a = 14.7
+b = 3317
+
+SGg = 0.734
+T = 669.67
+Tpc = 385.9
+Ppc = 658.7
+n = 10
+
+def DAK(P):
+    Tpr = T/Tpc
+    Ppr = P/Ppc
+
+    A1 = 0.3265
+    A2 = -1.07
+    A3 = -0.5339
+    A4 = 0.01569
+    A5 = -0.05165
+    A6 = 0.5475
+    A7 = -0.7361
+    A8 = 0.1844
+    A9 = 0.1056
+    A10 = 0.6134
+    A11 = 0.721
+
+    R1 = A1 + A2 / Tpr + A3 / Tpr ** 3 + A4 / Tpr ** 4 + A5 / Tpr ** 5
+    R2 = 0.27 * Ppr / Tpr
+    R3 = A6 + A7 / Tpr + A8 / Tpr ** 2
+    R4 = A9 * (A7 / Tpr + A8 / Tpr ** 2)
+    R5 = A10 / Tpr ** 3
+
+    Rho = 0.27 * Ppr / Tpr
+    Rhobef = Rho
+    for i in range (150):
+        frho = R1 * Rho - R2 / Rho + R3 * Rho ** 2 - R4 * Rho ** 5 + R5 * (1 + A11 * Rho ** 2) * Rho ** 2 * np.exp(-A11 * Rho ** 2) + 1
+        dfrho = R1 + R2 / Rho ** 2 + 2 * R3 * Rho - 5 * R4 * Rho ** 4 + 2 * R5 * Rho * np.exp(-A11 * Rho ** 2) * ((1 + 2 * A11 * Rho ** 3) - A11 * Rho ** 2 * (1 + A11 * Rho ** 2))
+        Rho = Rho - frho / dfrho
+        test = np.abs((Rho - Rhobef) / Rho)
+        if test < 0.00001:
+            Rhobef = Rho
+            break
+    z = 0.27 * Ppr / (Rho * Tpr)
+    return z
+
+def mu(P, z):
+    Mg = 28.967 * SGg
+    x = 3.5 + 985/T + 0.001 * Mg
+    y = 2.4 - 0.2 * x
+    k = ((9.4 + 0.02 * Mg) * T ** 1.5)/(209 + 19 * Mg + T)
+    Rhog = (Mg * P)/(64.428 * z * 10.732 * T)
+    mu = (k * np.exp(x * Rhog ** y))/10000
+    return mu
+
+def f(P, mu, z):
+    g = (2 * P)/(mu * z)
+    return g
+
+s = (b - a)/n
+total = 0
+i = a
+
+while i < b:
+    z = DAK(i)
+    mug = mu(i,z)
+    A = (f(i, mug, z) + f(i + s, mug, z)) * s / 2
+    total += A
+    i += s
+
+print(total)
