@@ -1,15 +1,32 @@
+'''
+Surya Kamanda Tanata
+12222105
+
+Kalkulator pseudo pressure dengan korelasi z faktor DAK dan viskositas gas Lee Gonzales
+
+Persamaan pseudo pressure
+https://www.ihsenergy.ca/support/documentation_ca/Harmony/content/html_files/reference_material/general_concepts/pseudo-pressure.htm
+Pp(P) = \int_a^b \frac{2P}{mug \times z} dP
+
+Integral menggunakan trapezoidal dengan a tekanan standar dan b tekanan wellbore flow
+'''
+
 import numpy as np
 
-a = 14.7
-b = 3317
+a = 14.65
+b = 14.65 # input Pwf
 
 SGg = 0.734
 T = 669.67
 Tpc = 385.9
 Ppc = 658.7
-n = 10
+n = 100
 
 def DAK(P):
+    '''
+    z  dengan kerolasi Dranchuk-Abou-Kassem
+    https://wiki.pengtools.com/index.php?title=Dranchuk_correlation
+    '''
     Tpr = T/Tpc
     Ppr = P/Ppc
 
@@ -45,6 +62,10 @@ def DAK(P):
     return z
 
 def mu(P, z):
+    '''
+    Lee-gas viscosity correlation
+    https://wiki.pengtools.com/index.php?title=Lee_correlation
+    '''
     Mg = 28.967 * SGg
     x = 3.5 + 985/T + 0.001 * Mg
     y = 2.4 - 0.2 * x
